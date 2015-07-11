@@ -11,6 +11,7 @@ app.get('/api/v1/serviceName', function(req, res){
   //accessing get params
     req.params.id
   */
+  var response = {"status": "Ok"};
   res.send(response);
 });
 
@@ -20,6 +21,7 @@ app.post('/api/v1/serviceName', function(req, res){
   //accessing post params
     req.body
   */
+  var response = {"status": "Ok"};
   res.send(response);
 });
 
