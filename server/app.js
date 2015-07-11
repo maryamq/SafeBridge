@@ -8,9 +8,9 @@ app.use(bodyParser.json());
 var client = {}
 client.twilio = (function() {
   // Twilio Credentials 
-  var accountSid = 'AC92a0190d479907c672610b0433b6fcc8',
-      authToken = '982761859812f01588900af41879a555',
-      fromPhone =  '+16506812248',
+  var accountSid = 'ACdcc50e6ed99e769207278222342aa797',
+      authToken = '277681ba07d0f8080b668c93a4850aa6',
+      fromPhone =  '+16506812302',
       twilio = require('twilio')(accountSid, authToken),
       sendMessage, init;
 
@@ -36,8 +36,8 @@ app.get('/api/v1/sendMessage', function(req, res){
   //accessing get params
     req.params.id
   */
-  var response = "hello world";
-  //client.twilio.sendMessage("+16502379529", "This is Maryam!");
+  var response = "hello world2";
+  client.twilio.sendMessage("+14084891405", "This is Maryam!");
   res.send(response);
 });
 
