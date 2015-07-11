@@ -30,24 +30,33 @@ client.twilio = (function() {
 }());
  
 
-app.get('/api/v1/sendMessage', function(req, res){
+app.post('/api/v1/sendMessage', function(req, res){
   /*
   service code here
   //accessing get params
     req.params.id
   */
-<<<<<<< HEAD
-  var response = "hello world2";
-  client.twilio.sendMessage("+14084891405", "This is Maryam!");
-=======
-  var chat_id = req.param.chat_id;  // id of the session
-  var message = req.param.message;
+
+  var chat_id = req.body.chat_id;  // id of the session
+  var message = req.body.message;
+
+  console.log("chat id")
+  console.log(chat_id)
+  console.log("message")
+  console.log(message)
+
+  if (typeof(chat_id) === "undefined") {
+  throw new Error("Error: No existing chat_id")
+}
+if (typeof(message) === "undefined") {
+  throw new Error("Error: No existing message")
+}
 
   // look up the receiver chat id.
 
-  var response = "hello world";
+  var response = "chat id = " + chat_id + " and message = " + message;
   //client.twilio.sendMessage("+16502379529", "This is Maryam!");
->>>>>>> 90deff1f413d9fa65f6d44e750ceefd7265d9b36
+
   res.send(response);
 });
 
