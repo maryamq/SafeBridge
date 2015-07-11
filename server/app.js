@@ -1,9 +1,11 @@
 var express = require('express');
 var app = express();
 var bodyParser = require("body-parser");
+var Parse = require('parse').Parse;
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+
 
 var client = {}
 client.twilio = (function() {
@@ -12,7 +14,7 @@ client.twilio = (function() {
       authToken = '982761859812f01588900af41879a555',
       fromPhone =  '+16506812248',
       twilio = require('twilio')(accountSid, authToken),
-      sendMessage, init;
+      sendMessage;
 
 
   sendMessage = function(toPhone, message) {
@@ -26,6 +28,35 @@ client.twilio = (function() {
   return {
     sendMessage : sendMessage
   };
+
+
+}());
+
+client.parse = (function() {
+  var appId = "EskNAzWggrRsCs2y0BFSEGUoHoNhzOASNFfqGVi9",
+      jsKey = "2X5eB9njA4iVStOfhnk69y7kggwxJ6MCviEPQW2T",
+      Client_Map  = Parse.Object.extend("client_map"),
+      getPhoneHash;
+
+  // Initialize Parse
+  Parse.initialize(appId, jsKey);
+
+  getPhoneHash = function(phone_num, onSuccess) {
+    var query = new Parse.Query(Client_Map);
+    query.equalTo("ph_num", phone_num);
+    var phone_code = "";
+    query.find().then(function(result){
+        if (result && result.length  > 0) {
+          phone_code = result[0].attributes.uq_code;
+          onSuccess(phone_code);
+        }
+    });
+  };
+
+  return {
+    getPhoneHash : getPhoneHash
+  };
+
 
 }());
  
@@ -42,8 +73,7 @@ app.get('/api/v1/sendMessage', function(req, res){
   // look up the receiver chat id.
 
   var response = "hello world";
-  //client.twilio.sendMessage("+16502379529", "This is Maryam!");
-  res.send(response);
+  res.send(response)
 });
 
 app.get('/api/v1/endConversation', function(req, res){
