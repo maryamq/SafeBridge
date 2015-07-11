@@ -8,9 +8,9 @@ app.use(bodyParser.json());
 var client = {}
 client.twilio = (function() {
   // Twilio Credentials 
-  var accountSid = 'AC92a0190d479907c672610b0433b6fcc8',
-      authToken = '982761859812f01588900af41879a555',
-      fromPhone =  '+16506812248',
+  var accountSid = process.env.twilioSid,
+      authToken = process.env.twilioToken,
+      fromPhone =  '+19783636041',
       twilio = require('twilio')(accountSid, authToken),
       sendMessage, init;
 
@@ -42,7 +42,7 @@ app.get('/api/v1/sendMessage', function(req, res){
   // look up the receiver chat id.
 
   var response = "hello world";
-  //client.twilio.sendMessage("+16502379529", "This is Maryam!");
+  client.twilio.sendMessage("+16039186391", "This is Maryam!");
   res.send(response);
 });
 
