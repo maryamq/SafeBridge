@@ -36,9 +36,20 @@ app.get('/api/v1/sendMessage', function(req, res){
   //accessing get params
     req.params.id
   */
+  var chat_id = req.param.chat_id;  // id of the session
+  var message = req.param.message;
+
+  // look up the receiver chat id.
+
   var response = "hello world";
   //client.twilio.sendMessage("+16502379529", "This is Maryam!");
   res.send(response);
+});
+
+app.get('/api/v1/endConversation', function(req, res){
+  var session_id = req.param.session_id;
+  // delte data
+
 });
 
 app.post('/api/v1/serviceName', function(req, res){
