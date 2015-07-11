@@ -5,13 +5,39 @@ var bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-app.get('/api/v1/serviceName', function(req, res){
+var client = {}
+client.twilio = (function() {
+  // Twilio Credentials 
+  var accountSid = 'AC92a0190d479907c672610b0433b6fcc8',
+      authToken = '982761859812f01588900af41879a555',
+      fromPhone =  '+16506812248',
+      twilio = require('twilio')(accountSid, authToken),
+      sendMessage, init;
+
+
+  sendMessage = function(toPhone, message) {
+    twilio.messages.create({
+      from: fromPhone,  
+      to: toPhone,
+      body: message
+    });
+  };
+  
+  return {
+    sendMessage : sendMessage
+  };
+
+}());
+ 
+
+app.get('/api/v1/sendMessage', function(req, res){
   /*
   service code here
   //accessing get params
     req.params.id
   */
-  var response = {"status": "Ok"};
+  var response = "hello world";
+  //client.twilio.sendMessage("+16502379529", "This is Maryam!");
   res.send(response);
 });
 
@@ -21,9 +47,10 @@ app.post('/api/v1/serviceName', function(req, res){
   //accessing post params
     req.body
   */
-  var response = {"status": "Ok"};
   res.send(response);
 });
+
+
 
 app.use(express.static(__dirname + '/public'));
 
