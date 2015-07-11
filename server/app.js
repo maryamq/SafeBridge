@@ -11,10 +11,10 @@ var client = {}
 client.twilio = (function() {
   // Twilio Credentials 
   var accountSid = 'AC92a0190d479907c672610b0433b6fcc8',
-      authToken = '982761859812f01588900af41879a555',
-      fromPhone =  '+16506812248',
-      twilio = require('twilio')(accountSid, authToken),
-      sendMessage;
+  authToken = '982761859812f01588900af41879a555',
+  fromPhone =  '+16506812248',
+  twilio = require('twilio')(accountSid, authToken),
+  sendMessage;
 
 
   sendMessage = function(toPhone, message) {
@@ -34,9 +34,9 @@ client.twilio = (function() {
 
 client.parse = (function() {
   var appId = "EskNAzWggrRsCs2y0BFSEGUoHoNhzOASNFfqGVi9",
-      jsKey = "2X5eB9njA4iVStOfhnk69y7kggwxJ6MCviEPQW2T",
-      Client_Map  = Parse.Object.extend("client_map"),
-      getPhoneHash, generatePhoneHash, getPhoneFromHash, hashCode;
+  jsKey = "2X5eB9njA4iVStOfhnk69y7kggwxJ6MCviEPQW2T",
+  Client_Map  = Parse.Object.extend("client_map"),
+  getPhoneHash, generatePhoneHash, getPhoneFromHash, hashCode;
 
   // Initialize Parse
   Parse.initialize(appId, jsKey);
@@ -47,12 +47,12 @@ client.parse = (function() {
     query.equalTo("ph_num", phone_num);
     var phone_code = "";
     query.find().then(function(result){
-        if (result && result.length  > 0) {
-          phone_code = result[0].attributes.uq_code;
-          onSuccess(phone_code);
-        } else {
-          onSuccess("");
-        }
+      if (result && result.length  > 0) {
+        phone_code = result[0].attributes.uq_code;
+        onSuccess(phone_code);
+      } else {
+        onSuccess("");
+      }
     });
   };
 
@@ -62,12 +62,12 @@ client.parse = (function() {
     query.equalTo("uq_code", phone_hash);
     var phone_code = "";
     query.find().then(function(result){
-        if (result && result.length  > 0) {
-          phone_num = result[0].attributes.ph_num;
-          onSuccess(phone_num);
-        } else {
-          onSuccess("");
-        }
+      if (result && result.length  > 0) {
+        phone_num = result[0].attributes.ph_num;
+        onSuccess(phone_num);
+      } else {
+        onSuccess("");
+      }
     });
   };
 
@@ -102,7 +102,7 @@ client.parse = (function() {
     }
     return hash;
   }
- 
+  
   return {
     getPhoneHash : getPhoneHash,
     generatePhoneHash: generatePhoneHash,
@@ -111,14 +111,14 @@ client.parse = (function() {
 
 
 }());
- 
+
 
 app.get('/api/v1/sendMessage', function(req, res){
   /*
   service code here
   //accessing get params
     req.params.id
-  */
+    */
   var chat_id = req.param.chat_id;  // id of the session
   var message = req.param.message;
 
@@ -142,9 +142,9 @@ app.post('/api/v1/serviceName', function(req, res){
   service code here
   //accessing post params
     req.body
-  */
-  res.send(response);
-});
+    */
+    res.send(response);
+  });
 
 
 app.use(express.static(__dirname + '/public'));
