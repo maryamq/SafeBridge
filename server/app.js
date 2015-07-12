@@ -20,6 +20,10 @@ var twilio = require('twilio');
 
 
 
+
+
+
+
 app.post('/api/v1/sendMessage', function(req, res){
   /*
   service code here
@@ -85,11 +89,41 @@ app.post('/api/v1/receiveMessage', function(req, res){
     req.body
   */
   var resp = new twilio.TwimlResponse();
+  var phoneNumber = req.body.From
+  parseBackend.find('client_map', {where: {ph_num: phoneNumber}, limit: 1}, function (err, response) {
+    if(!err) {
+      var results = response.results;
+      if(results.length === 0) {
+        parseBackend.
+      }
+      var parseObject = response.results[0]
+      if(typeof parseObject === 'undefined') {
+        throw new Error('The unique_id ' + uniqueId + ' could not be found.')
+      }
+      var phoneNumber = ("+1" + parseObject.ph_num)
+      delete parseObject
+      client.twilio.sendMessage({
+          to: phoneNumber,
+          from: '+19783636041',
+          body: smsMessage
+      }, function(err, responseData) {
+          if (!err) {
+            res.send("success");
+          } else {
+            throw new Error('There was an issue sending the message to the client.')
+          }
+      });
+    } else {
+      throw new Error('The unique_id ' + uniqueId + ' could not be found.')
+    }
+  });
+
   resp.sms('hello world')
+  console.log(req.body)
   console.log(resp)
   console.log(Object.keys(resp))
   res.writeHead(200, {'Content-Type': 'text/xml'});
-  res.end(twiml.toString());
+  res.end(resp.toString());
   // res.end(resp);
 });
 
