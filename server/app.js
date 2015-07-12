@@ -246,7 +246,7 @@ client.parse = (function() {
     new_client.save(null, {
       success: function(new_client) {
         // Execute any logic that should take place after the object is saved.
-        onSuccess(hash);
+        onSuccess(hash + "");
         console.log('New object created with objectId: ' + new_client.id);
       },
       error: function(new_client, error) {
