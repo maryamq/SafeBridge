@@ -16,29 +16,38 @@ app.use(bodyParser.json());
 var client = {}
 client.twilio = require('twilio')(process.env.twilioSid, process.env.twilioToken);
 
+var twilio = require('twilio');
+
+
+
 app.post('/api/v1/sendMessage', function(req, res){
   /*
   service code here
   //accessing get params
     req.params.id
   */
-  var uniqueId     = req.body.chat_id;  // id of the session
+  var uniqueId     = req.body.unique_id;  // id of the session
   var smsMessage   = req.body.message;
 
-  if (typeof(chat_id) === "undefined") {
-    throw new Error("Error: No existing chat_id")
+  if (typeof(uniqueId) === "undefined") {
+    throw new Error("Error: The request body is missing the unique_id key.")
   }
-  if (typeof(message) === "undefined") {
-    throw new Error("Error: No existing message")
+  if (typeof(smsMessage) === "undefined") {
+    throw new Error("Error: The request body is missing the message key.")
   }
 
-  parseBackend.find('client_map', {uq_code: uniqueId}, function (err, response) {
+  parseBackend.find('client_map', {where: {uq_code: uniqueId}, limit: 1}, function (err, response) {
     if(!err) {
-      var phoneNumber = ("+1" + response.ph_num)
+      var parseObject = response.results[0]
+      if(typeof parseObject === 'undefined') {
+        throw new Error('The unique_id ' + uniqueId + ' could not be found.')
+      }
+      var phoneNumber = ("+1" + parseObject.ph_num)
+      delete parseObject
       client.twilio.sendMessage({
           to: phoneNumber,
           from: '+19783636041',
-          body: message
+          body: smsMessage
       }, function(err, responseData) {
           if (!err) {
             res.send("success");
@@ -66,6 +75,22 @@ app.post('/api/v1/serviceName', function(req, res){
     req.body
   */
   res.send(response);
+});
+
+
+app.post('/api/v1/receiveMessage', function(req, res){
+  /*
+  service code here
+  //accessing post params
+    req.body
+  */
+  var resp = new twilio.TwimlResponse();
+  resp.sms('hello world')
+  console.log(resp)
+  console.log(Object.keys(resp))
+  res.writeHead(200, {'Content-Type': 'text/xml'});
+  res.end(twiml.toString());
+  // res.end(resp);
 });
 
 
