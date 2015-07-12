@@ -64,7 +64,8 @@ client.parse = (function() {
   Conversation  = Parse.Object.extend("conversation"),
   getPhoneHash, generatePhoneHash, getPhoneFromHash, hashCode,
   saveConversation, endConversation, getConversation, claimConversation,
-  createConversation, getAllNewConversation, getConversationAfterDate;
+  createConversation, getAllNewConversation, getSingleConversation,
+  getConversationAfterDate;
 
   // Initialize Parse
   Parse.initialize(appId, jsKey);
@@ -103,6 +104,14 @@ client.parse = (function() {
      var new_conv_entry = new Parse.Query(Conversation);
      new_conv_entry.equalTo("session_id", session_id);
      new_conv_entry.find().then(function(result){
+         onSuccess(result);
+     });
+  };
+
+  getSingleConversation = function(session_id, onSuccess) {
+     var new_conv_entry = new Parse.Query(Conversation);
+     new_conv_entry.equalTo("session_id", session_id);
+     new_conv_entry.first().then(function(result){
          onSuccess(result);
      });
   };
@@ -233,6 +242,7 @@ client.parse = (function() {
     claimConversation: claimConversation,
     createConversation: createConversation,
     getAllNewConversation: getAllNewConversation,
+    getSingleConversation: getSingleConversation,
     getConversationAfterDate: getConversationAfterDate
   }
 }());
@@ -324,7 +334,7 @@ app.post('/api/v1/receiveMessage', function(req, res){
   var twiml = new twilioResp.TwimlResponse();
   var phoneNumber = req.body.From;
   var smsMessage = req.body.Body;
-  client.parse.getPhoneHash(phoneNumber, function(phoneHash) {  
+  client.parse.getPhoneHash(phoneNumber, function(phoneHash) {
     if(phoneHash === '') {
       client.parse.generatePhoneHash(phoneNumber, function(phoneHash){
         twiml.sms('Thank you for reaching out to us! We are rapidly matching you with a community advocate. We will respond within 3 minutes. Until then, please read the following information so you understand your rights as a member of our community.')
@@ -334,15 +344,19 @@ app.post('/api/v1/receiveMessage', function(req, res){
         })
       });
     } else {
-      client.parse.getConversation(phoneHash, function(conversationResp) {
-        if(conversationResp.length === 0) {
+      client.parse.getSingleConversation(phoneHash, function(conversationResp) {
+        if(typeof conversationResp === 'undefined') {
           client.parse.createConversation(phoneHash, smsMessage, true, function(conversationResp) {
             res.writeHead(200, {'Content-Type': 'text/xml'});
             res.end(twiml.toString());
           })
         } else {
-          res.writeHead(200, {'Content-Type': 'text/xml'});
-          res.end(twiml.toString());
+          var attributes = conversationResp.attributes || {}
+          var advisorId = attributes.advisor_id ||  null
+          client.parse.saveConversation(advisorId, phoneHash, smsMessage, true, function(blank) {
+            res.writeHead(200, {'Content-Type': 'text/xml'});
+            res.end(twiml.toString());
+          })
         }
       });
     }
@@ -352,4 +366,4 @@ app.post('/api/v1/receiveMessage', function(req, res){
 
 app.use(express.static(__dirname + '/public'));
 
-app.listen(process.env.PORT || 4000);
+app.listen(process.env.PORT || 2000);
