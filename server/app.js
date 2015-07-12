@@ -1,7 +1,17 @@
-var express = require('express');
-var app = express();
-var bodyParser = require("body-parser");
-var Parse = require('parse').Parse;
+var express        = require('express');
+var app            = express();
+var bodyParser     = require("body-parser");
+var NodeParse      = require('node-parse-api').Parse;
+var Parse          = require('parse').Parse;
+var twilioResp     = require('twilio')
+
+
+var options = {
+    app_id: process.env.ParseAppID,
+    api_key: process.env.ParseSecretKey
+}
+
+var parseBackend = new NodeParse(options);
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -45,8 +55,6 @@ client.twilio = (function() {
   return {
     sendMessage : sendMessage
   };
-
-
 }());
 
 client.parse = (function() {
@@ -55,7 +63,8 @@ client.parse = (function() {
   Client_Map  = Parse.Object.extend("client_map"),
   Conversation  = Parse.Object.extend("conversation"),
   getPhoneHash, generatePhoneHash, getPhoneFromHash, hashCode,
-  saveConversation, endConversation, getConversation, claimConversation,getAllNewConversation;
+  saveConversation, endConversation, getConversation, claimConversation,
+  createConversation, getAllNewConversation;
 
   // Initialize Parse
   Parse.initialize(appId, jsKey);
@@ -89,8 +98,6 @@ client.parse = (function() {
     });
   };
 
-
-
   getConversation = function(session_id, onSuccess) {
      var new_conv_entry = new Parse.Query(Conversation);
      new_conv_entry.equalTo("session_id", session_id);
@@ -99,17 +106,21 @@ client.parse = (function() {
      });
   };
 
+  createConversation = function(session_id, smsMessage, onSuccess) {
+    saveConversation(null, session_id, smsMessage, function(blank) {
+      getConversation(session_id, function(conversationResp) {
+        onSuccess(conversationResp);
+      });
+    });
+  };
 
-getAllNewConversation = function(onSuccess) {
+  getAllNewConversation = function(onSuccess) {
      var new_conv_entry = new Parse.Query(Conversation);
      new_conv_entry.doesNotExist("advisor_id");
      new_conv_entry.find().then(function(result){
          onSuccess(result);
      });
   };
-
-
-
 
   claimConversation = function(session_id, a_id) {
     var query = new Parse.Query(Conversation);
@@ -138,7 +149,6 @@ getAllNewConversation = function(onSuccess) {
       }
     });
   };
-  
 
   // *********************** PHone Hash Methods **********************/
   // Returns phone hash code from the db.
@@ -201,7 +211,7 @@ getAllNewConversation = function(onSuccess) {
       hash |= 0; // Convert to 32bit integer
     }
     return hash;
-  }
+  };
 
   return {
     getPhoneHash : getPhoneHash,
@@ -211,10 +221,9 @@ getAllNewConversation = function(onSuccess) {
     endConversation: endConversation,
     getConversation: getConversation,
     claimConversation: claimConversation,
-    getAllNewConversation:getAllNewConversation
-  };
-
-
+    createConversation: createConversation,
+    getAllNewConversation: getAllNewConversation
+  }
 }());
 
 
@@ -238,12 +247,14 @@ app.get('/api/v1/getAllNewConversation', function(req, res){
    });
 });
 
+
 app.get('/api/v1/claimConversation/:session_id/:advisor_id', function(req, res){
    var session_id = req.params.session_id;
    var advisor_id = req.params.advisor_id;
    client.parse.claimConversation(session_id, advisor_id);
    res.send("Success " + session_id);
 });
+
 
 app.post('/api/v1/sendMessage', function(req, res){
   var a_id = req.param.advisor_id;  // advisor id
@@ -262,18 +273,20 @@ app.post('/api/v1/sendMessage', function(req, res){
   res.send("Success");
 });
 
-app.get('/api/v1/getConversation', function(req, res){
-  var session_id = req.param.session_id;
+app.get('/api/v1/getConversation/:session_id', function(req, res){
+  var session_id = req.params.session_id;
   client.parse.getConversation(session_id, function(result) {
     res.send(result);
   });
 });
+
 
 app.get('/api/v1/endConversation/:session_id', function(req, res){
   var s_id = req.params.session_id;
   client.parse.endConversation(s_id);
   res.send("End Conversation Done: " + s_id);
 });
+
 
 app.post('/api/v1/serviceName', function(req, res){
   /*
@@ -283,6 +296,36 @@ app.post('/api/v1/serviceName', function(req, res){
     */
     res.send(response);
   });
+
+
+app.post('/api/v1/receiveMessage', function(req, res){
+  var twiml = new twilioResp.TwimlResponse();
+  var phoneNumber = req.body.From;
+  var smsMessage = req.body.Body;
+  client.parse.getPhoneHash(phoneNumber, function(phoneHash) {  
+    if(phoneHash === '') {
+      client.parse.generatePhoneHash(phoneNumber, function(phoneHash){
+        twiml.sms('Thank you for reaching out to us! We are rapidly matching you with a community advocate. We will respond within 3 minutes. Until then, please read the following information so you understand your rights as a member of our community.')
+        client.parse.createConversation(phoneHash, smsMessage, function(conversationResp) {
+          res.writeHead(200, {'Content-Type': 'text/xml'});
+          res.end(twiml.toString());
+        })
+      });
+    } else {
+      client.parse.getConversation(phoneHash, function(conversationResp) {
+        if(conversationResp.length === 0) {
+          client.parse.createConversation(phoneHash, smsMessage, function(conversationResp) {
+            res.writeHead(200, {'Content-Type': 'text/xml'});
+            res.end(twiml.toString());
+          })
+        } else {
+          res.writeHead(200, {'Content-Type': 'text/xml'});
+          res.end(twiml.toString());
+        }
+      });
+    }
+  })
+});
 
 
 app.use(express.static(__dirname + '/public'));
