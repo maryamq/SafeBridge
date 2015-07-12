@@ -215,12 +215,8 @@ app.get('/api/v1/getAllNewConversation', function(req, res){
    //var session_id = "abc";
    console.log("1");
    client.parse.getAllNewConversation(function(result) {
-      for(var i = 0; i<result.length; i++) {
-        console.log(result[i]);
-      }
+     res.send(result);
    });
-   res.send("Hello World")
-
 });
 
 
