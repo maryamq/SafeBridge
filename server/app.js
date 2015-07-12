@@ -16,14 +16,21 @@ app.use(bodyParser.json());
 var client = {}
 client.twilio = require('twilio')(process.env.twilioSid, process.env.twilioToken);
 
-app.get('/api/v1/sendMessage', function(req, res){
+app.post('/api/v1/sendMessage', function(req, res){
   /*
   service code here
   //accessing get params
     req.params.id
   */
-  var uniqueId  = req.param.unique_id;  // id of the session
-  var smsMessage   = req.param.message;
+  var uniqueId     = req.body.chat_id;  // id of the session
+  var smsMessage   = req.body.message;
+
+  if (typeof(chat_id) === "undefined") {
+    throw new Error("Error: No existing chat_id")
+  }
+  if (typeof(message) === "undefined") {
+    throw new Error("Error: No existing message")
+  }
 
   parseBackend.find('client_map', {uq_code: uniqueId}, function (err, response) {
     if(!err) {
@@ -44,6 +51,7 @@ app.get('/api/v1/sendMessage', function(req, res){
     }
   });
 });
+
 
 app.get('/api/v1/endConversation', function(req, res){
   var session_id = req.param.session_id;
