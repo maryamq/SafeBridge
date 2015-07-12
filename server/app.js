@@ -376,11 +376,7 @@ app.get('/api/v1/endConversation/:session_id', function(req, res){
 app.get('/api/v1/getAdvisor/:advisor_id', function(req, res){
   var a_id = req.params.advisor_id;
   client.parse.getAdvisor(a_id, function(result) {
-    if (result) {
-      res.send(result);
-    } else {
-      res.send(false);
-    }
+    res.send(result);
   });
   });
 
