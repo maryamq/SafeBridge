@@ -38,7 +38,7 @@ client.parse = (function() {
   Client_Map  = Parse.Object.extend("client_map"),
   Conversation  = Parse.Object.extend("conversation"),
   getPhoneHash, generatePhoneHash, getPhoneFromHash, hashCode,
-  saveConversation, endConversation, getConversation, claimConversation;
+  saveConversation, endConversation, getConversation, claimConversation,getAllNewConversation;
 
   // Initialize Parse
   Parse.initialize(appId, jsKey);
@@ -81,6 +81,17 @@ client.parse = (function() {
          onSuccess(result);
      });
   };
+
+
+getAllNewConversation = function(onSuccess) {
+     var new_conv_entry = new Parse.Query(Conversation);
+     new_conv_entry.doesNotExist("advisor_id");
+     new_conv_entry.find().then(function(result){
+         onSuccess(result);
+     });
+  };
+
+
 
 
   claimConversation = function(a_id, phone_hash) {
@@ -180,7 +191,8 @@ client.parse = (function() {
     saveConversation: saveConversation,
     endConversation: endConversation,
     getConversation: getConversation,
-    claimConversation: claimConversation
+    claimConversation: claimConversation,
+    getAllNewConversation:getAllNewConversation
   };
 
 
@@ -190,6 +202,19 @@ client.parse = (function() {
 app.get('/api/v1/test', function(req, res){
    var session_id = "abc";
    client.parse.getConversation(session_id, function(result) {
+      for(var i = 0; i<result.length; i++) {
+        console.log(result[i]);
+      }
+   });
+   res.send("Hello World")
+
+});
+
+
+app.get('/api/v1/getAllNewConversation', function(req, res){
+   //var session_id = "abc";
+   console.log("1");
+   client.parse.getAllNewConversation(function(result) {
       for(var i = 0; i<result.length; i++) {
         console.log(result[i]);
       }
@@ -214,12 +239,7 @@ app.post('/api/v1/sendMessage', function(req, res){
     client.parse.saveConversation(a_id, session_id, message);
     client.twilio.sendMessage(phone_num, message);
   });
-
-  var response = "hello world";
-  client.parse.getPhoneFromHash("abc", function(value) {
-    console.log("success " + value);
-  });
-  res.send(response)
+  res.send("Success");
 });
 
 app.get('/api/v1/getConversation', function(req, res){
