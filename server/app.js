@@ -92,21 +92,18 @@ client.parse = (function() {
   createConversation = function(session_id, smsMessage, onSuccess) {
     saveConversation(null, session_id, smsMessage, function(blank) {
       getConversation(session_id, function(conversationResp) {
-        onSuccess(conversationResp)
+        onSuccess(conversationResp);
       });
     });
   };
 
-getAllNewConversation = function(onSuccess) {
+  getAllNewConversation = function(onSuccess) {
      var new_conv_entry = new Parse.Query(Conversation);
      new_conv_entry.doesNotExist("advisor_id");
      new_conv_entry.find().then(function(result){
          onSuccess(result);
      });
   };
-
-
-
 
   claimConversation = function(session_id, a_id) {
     var query = new Parse.Query(Conversation);
@@ -135,7 +132,6 @@ getAllNewConversation = function(onSuccess) {
       }
     });
   };
-  
 
   // *********************** PHone Hash Methods **********************/
   // Returns phone hash code from the db.
@@ -198,7 +194,7 @@ getAllNewConversation = function(onSuccess) {
       hash |= 0; // Convert to 32bit integer
     }
     return hash;
-  }
+  };
 
   return {
     getPhoneHash : getPhoneHash,
@@ -210,9 +206,7 @@ getAllNewConversation = function(onSuccess) {
     claimConversation: claimConversation,
     createConversation: createConversation,
     getAllNewConversation: getAllNewConversation
-  };
-
-
+  }
 }());
 
 
