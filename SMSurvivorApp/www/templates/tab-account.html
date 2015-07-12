@@ -3,16 +3,16 @@
     <ion-list>
     <a class="item" href="#">
     	<i class="icon ion-person"></i>
-	   Akshay Pushparaja
+	   {{settings.f_name}} {{settings.l_name}}
 	</a>
 	<a class="item" href="#">
-	   @apushpar
+	   @{{settings.user_name}}
 	</a>
-	<a class="item" href="#">
+	<!--<a class="item" href="#">
 		<i class="icon ion-briefcase"></i>
 	   #helpSH
-	</a>
-    <ion-toggle  ng-model="settings.enableFriends">
+	</a>-->
+    <ion-toggle  ng-model="settings.available" ng-change="statusChange()">
         Available
     </ion-toggle>
     </ion-list>

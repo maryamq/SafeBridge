@@ -1,20 +1,45 @@
 angular.module('starter.controllers', [])
 
-.controller('DashCtrl', function($scope, Conversations, $rootScope) {
+.controller('DashCtrl', function($scope, Conversations, $rootScope, Advisor) {
 
   /*console.log($rootScope.org_id);
   $scope.feeds = Feed.all();
   $scope.remove = function(feed) {
     Feed.remove(feed);
   }*/
+  $scope.haveData = false;
   $scope.advisor_id = $rootScope.advisor_id;
   $scope.populate = function(){
     Conversations.get().success(function(data){
-      $scope.conversations = data;
+      if (data.length > 0) {
+        $scope.haveData = true;
+        $scope.conversations = data; 
+      }else{
+        $scope.haveData = false;
+      }
+      
       //console.log($scope.conversations);
     });  
   }
-  $scope.populate();
+
+  setInterval(function () {
+    $scope.pageRefresh();
+  }, 1000);
+
+  $scope.pageRefresh = function(){
+    //$scope.conversations = [];
+    Advisor.get($rootScope.advisor_id).success(function(data){
+      $scope.settings = data[0];
+      console.log($scope.settings.available);
+      if ($scope.settings.available) {
+        $scope.populate();    
+      }else{
+        $scope.conversations = [];
+      }
+    });  
+  }
+  
+  
 
   $scope.claim = function(session_id){
     //console.log(session_id+"    "+$scope.advisor_id);
@@ -53,7 +78,7 @@ angular.module('starter.controllers', [])
 
 })
 
-.controller('ChatsCtrl', function($scope, Chats) {
+.controller('ChatsCtrl', function($scope, Chats, Conversations, $rootScope) {
   // With the new view caching in Ionic, Controllers are only called
   // when they are recreated or on app start, instead of every page change.
   // To listen for when this page is active (for example, to refresh data),
@@ -62,10 +87,14 @@ angular.module('starter.controllers', [])
   //$scope.$on('$ionicView.enter', function(e) {
   //});
   
-  $scope.chats = Chats.all();
+  /*$scope.chats = Chats.all();
   $scope.remove = function(chat) {
     Chats.remove(chat);
-  }
+  }*/
+  Conversations.unique($rootScope.advisor_id).success(function (data) {
+    console.log(data);
+    $scope.chats = data;
+  });
 })
 
 .controller('ChatDetailCtrl', function($scope, $stateParams, $rootScope, Conversations) {
@@ -93,8 +122,20 @@ angular.module('starter.controllers', [])
   }
 })
 
-.controller('AccountCtrl', function($scope) {
-  $scope.settings = {
+.controller('AccountCtrl', function($scope, Advisor, $rootScope) {
+  console.log("in AccountCtrl");
+  Advisor.get($rootScope.advisor_id).success(function(data){
+    $scope.settings = data[0];
+    console.log($scope.settings);
+  });
+
+  $scope.statusChange = function () {
+    console.log($scope.settings.available);
+    Advisor.update($rootScope.advisor_id,$scope.settings.available).success(function(data){
+      console.log(data);
+    });
+  }
+  /*$scope.settings = {
     enableFriends: true
-  };
+  };*/
 });

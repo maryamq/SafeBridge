@@ -30,13 +30,24 @@
 <ion-view view-title="Feed">
   <ion-content>
     <div class="list">
-      <div class="item item-button-right" ng-repeat="chat in conversations" type="item-text-wrap" href="#/tab/chats/{{chat.objectId}}">
+      <div ng-show="haveData" class="item item-button-right" ng-repeat="chat in conversations" type="item-text-wrap" href="#/tab/chats/{{chat.objectId}}">
         
         <h2>{{chat.session_id}}</h2>
         <p>{{chat.msg}}</p>
         <button class="button button-positive" ng-click="claim(chat.session_id)">
           <i class="icon ion-checkmark-circled"></i>
         </button>
+        <!--<i class="icon ion-chevron-right icon-accessory"></i>
+
+        <ion-option-button class="button-assertive" ng-click="remove(chat)">
+          Delete
+        </ion-option-button>-->
+      </div>
+      <div ng-show="!haveData" class="item">
+        
+        
+        <p>No mesages to claim.</p>
+        
         <!--<i class="icon ion-chevron-right icon-accessory"></i>
 
         <ion-option-button class="button-assertive" ng-click="remove(chat)">

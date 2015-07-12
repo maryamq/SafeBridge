@@ -178,8 +178,29 @@ angular.module('starter.services', [])
             return $http.post('http://ec2-52-2-162-93.compute-1.amazonaws.com:3000/api/v1/sendMessage', data, {
                 
             });
+        },
+        unique:function(advisor){
+            return $http.get('http://ec2-52-2-162-93.compute-1.amazonaws.com:3000/api/v1/getUniqueConversation/'+advisor, {
+                
+            });
         }
     }
+}])
+
+.factory('Advisor',['$http',function($http){
+    return {
+        
+        get:function(a){
+            return $http.get('http://ec2-52-2-162-93.compute-1.amazonaws.com:3000/api/v1/getAdvisor/'+a, {
+                
+            });
+        },
+        update:function(a,b){
+            return $http.get('http://ec2-52-2-162-93.compute-1.amazonaws.com:3000/api/v1/updateAdvisorAvailability/'+a+'/'+b, {
+                
+            });
+        }
+      }
 }])
 
 .value('PARSE_CREDENTIALS',{
