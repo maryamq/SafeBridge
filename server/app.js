@@ -105,10 +105,11 @@ client.parse = (function() {
      });
   };
   
-  endConversation = function(a_id, phone_hash) {
+  endConversation = function(session_id) {
     var query = new Parse.Query(Conversation);
-    query.equalTo("uq_code", phone_hash);
-    query.find().then(function(result){
+    query.equalTo("session_id", session_id);
+    query.find().then(function(results){
+      console.log("results " + results);
       for(var i = 0; i<results.length; i++) {
          results[i].destroy({});
       }
@@ -211,24 +212,13 @@ app.get('/api/v1/sendMessage', function(req, res){
     req.params.id
   */
 
-  var a_id = req.param.a_id;  // advisor id
-  var session_id = req.param.s_id;
+
+app.post('/api/v1/sendMessage', function(req, res){
+
+  var a_id = req.param.advisor_id;  // advisor id
+  var session_id = req.param.session_id;
   var message = req.param.message;
 
-/*
-  if (typeof(chat_id) === "undefined") {
-  throw new Error("Error: No existing chat_id")
-}
-if (typeof(message) === "undefined") {
-  throw new Error("Error: No existing message")
-}
-
-  // look up the receiver chat id.
-
-  var response = "hello world";
-  client.twilio.sendMessage("+14084891405", "Hacking is cool!");
-  res.send(response);
-*/
   // Look up phone has via session Id.
   client.parse.getPhoneFromHash(session_id, function(phone_num) {
     if (phone_num == "") {
@@ -246,10 +236,18 @@ if (typeof(message) === "undefined") {
   res.send(response)
 });
 
+app.get('/api/v1/getConversation', function(req, res){
+  var session_id = req.param.session_id;
+  client.parse.getConversation(session_id, function(result) {
+    res.send(result);
+  });
+});
 
 app.get('/api/v1/endConversation', function(req, res){
-  var a_id = req.param.a_id;
-  var phone_hash = req.param.phone_hash;
+  var s_id = req.param.session_id;
+  console.log("session " + s_id);
+  client.parse.endConversation(s_id);
+  res.send("End Conversation Done: " + s_id);
 });
 
 app.post('/api/v1/serviceName', function(req, res){
@@ -317,4 +315,4 @@ app.get('/api/v1/account', function(req, res){
 
 app.use(express.static(__dirname + '/public'));
 
-app.listen(process.env.PORT || 2000);
+app.listen(process.env.PORT || 4000);
