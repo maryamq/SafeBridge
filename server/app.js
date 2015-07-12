@@ -1,14 +1,17 @@
 var express        = require('express');
 var app            = express();
 var bodyParser     = require("body-parser");
-var Parse          = require('node-parse-api').Parse;
+var NodeParse      = require('node-parse-api').Parse;
+var Parse          = require('parse').Parse;
+var twilioResp     = require('twilio')
+
 
 var options = {
     app_id: process.env.ParseAppID,
     api_key: process.env.ParseSecretKey
 }
 
-var parseBackend = new Parse(options);
+var parseBackend = new NodeParse(options);
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -43,7 +46,8 @@ client.parse = (function() {
   Client_Map  = Parse.Object.extend("client_map"),
   Conversation  = Parse.Object.extend("conversation"),
   getPhoneHash, generatePhoneHash, getPhoneFromHash, hashCode,
-  saveConversation, endConversation, getConversation, claimConversation;
+  saveConversation, endConversation, getConversation, claimConversation,
+  createConversation;
 
   // Initialize Parse
   Parse.initialize(appId, jsKey);
@@ -77,8 +81,6 @@ client.parse = (function() {
     });
   };
 
-
-
   getConversation = function(session_id, onSuccess) {
      var new_conv_entry = new Parse.Query(Conversation);
      new_conv_entry.equalTo("session_id", session_id);
@@ -87,6 +89,13 @@ client.parse = (function() {
      });
   };
 
+  createConversation = function(session_id, smsMessage, onSuccess) {
+    saveConversation(null, session_id, smsMessage, function(blank) {
+      getConversation(session_id, function(conversationResp) {
+        onSuccess(conversationResp)
+      });
+    });
+  };
 
   claimConversation = function(a_id, phone_hash) {
      var new_conv_entry = new Conversation();
@@ -184,7 +193,8 @@ client.parse = (function() {
     saveConversation: saveConversation,
     endConversation: endConversation,
     getConversation: getConversation,
-    claimConversation: claimConversation
+    claimConversation: claimConversation,
+    createConversation: createConversation
   };
 
 
@@ -251,15 +261,34 @@ app.post('/api/v1/receiveMessage', function(req, res){
   //accessing post params
     req.body
   */
-  var resp = new twilio.TwimlResponse();
-  var phoneNumber = req.body.From
-  client.parse.getPhoneHash(phoneNumber, function(err, phoneHash) {
-    console.log(err)
-    console.log(phone_hash)
-    // if(phoneHash)
+  var twiml = new twilioResp.TwimlResponse();
+  var phoneNumber = req.body.From;
+  var smsMessage = req.body.Body;
+  client.parse.getPhoneHash(phoneNumber, function(phoneHash) {  
+    if(phoneHash === '') {
+      client.parse.generatePhoneHash(phoneNumber, function(phoneHash){
+        twiml.sms('Thank you for reaching out to us! We are rapidly matching you with a community advocate. We will respond within 3 minutes. Until then, please read the following information so you understand your rights as a member of our community.')
+        client.parse.createConversation(phoneHash, smsMessage, function(conversationResp) {
+          res.writeHead(200, {'Content-Type': 'text/xml'});
+          res.end(twiml.toString());
+        })
+      });
+    } else {
+      client.parse.getConversation(phoneHash, function(conversationResp) {
+        if(conversationResp.length === 0) {
+          client.parse.createConversation(phoneHash, smsMessage, function(conversationResp) {
+            res.writeHead(200, {'Content-Type': 'text/xml'});
+            res.end(twiml.toString());
+          })
+        } else {
+          res.writeHead(200, {'Content-Type': 'text/xml'});
+          res.end(twiml.toString());
+        }
+      });
+    }
   })
 
-  // parseBackend.find('client_map', {where: {ph_num: phoneNumber}, limit: 1}, function (err, response) {
+  // parseBackend.find('client_map', {where: {ph_num: phoneNumber}, limit: 1}, function (err, ) {
   //   if(!err) {
   //     var results = response.results;
   //     if(results.length === 0) {
@@ -286,14 +315,14 @@ app.post('/api/v1/receiveMessage', function(req, res){
   //     throw new Error('The unique_id ' + uniqueId + ' could not be found.')
   //   }
   // });
-
+  // res.writeHead(200, {'Content-Type': 'text/xml'});
+  // res.write(resp.toString());
+  // res.end(twiml.toString());
   // resp.sms('hello world')
   // console.log(req.body)
   // console.log(resp)
   // console.log(Object.keys(resp))
-  res.writeHead(200, {'Content-Type': 'text/xml'});
-  // res.end(resp.toString());
-  res.end('hello');
+
 });
 
 
