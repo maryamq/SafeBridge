@@ -183,6 +183,11 @@ angular.module('starter.services', [])
             return $http.get('http://ec2-52-2-162-93.compute-1.amazonaws.com:3000/api/v1/getUniqueConversation/'+advisor, {
                 
             });
+        },
+        remove:function(session){
+            return $http.get('http://ec2-52-2-162-93.compute-1.amazonaws.com:3000/api/v1/endConversation/'+session, {
+                
+            });
         }
     }
 }])
