@@ -88,15 +88,12 @@ client.parse = (function() {
          var advisor = result[0];
          advisor.set("available", available);
          advisor.save(null, {
-      success: function(new_row) {
-        console.log('New object created with objectId: ' + new_row.id);
-      },
-      error: function(new_row, error) {
-        // Execute any logic that should take place if the save fails.
-        // error is a Parse.Error with an error code and message.
-        console.log('Failed to create new object, with error code: ' + error.message);
-
-      }
+        success: function(new_row) {
+          console.log('New object created with objectId: ' + new_row.id);
+        },
+        error: function(new_row, error) {
+          console.log('Failed to create new object, with error code: ' + error.message);
+        }
     });
     });
   };
