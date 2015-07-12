@@ -111,19 +111,21 @@ getAllNewConversation = function(onSuccess) {
 
 
 
-  claimConversation = function(a_id, phone_hash) {
-     var new_conv_entry = new Conversation();
-     new_conv_entry.set("advisor_id", a_id);
-     new_conv_entry.set("uq_code", phone_hash);
-     new_conv_entry.set("session_status", "active");
-     new_conv_entry.update({
-        success: function(myObject) {
-          console.log("UpdateConversation: Update successful");
-        },
-        error: function(myObject, error) {
-          console.log("UpdateConversation: Update failed");
-        }
-     });
+  claimConversation = function(session_id, a_id) {
+    var query = new Parse.Query(Conversation);
+     console.log("session _id" + session_id + "a_id " + a_id);
+     query.equalTo("session_id", session_id);
+     query.find().then(function(results){
+      for(var i = 0; i<results.length; i++) {
+         var new_conv_entry = results[i];
+         console.log("entry " + new_conv_entry.message);
+         new_conv_entry.set("advisor_id", a_id);
+         new_conv_entry.set("session_id", session_id);
+         new_conv_entry.set("uq_code", session_id);
+         new_conv_entry.set("session_status", true);
+         new_conv_entry.save();
+      }
+    });
   };
   
   endConversation = function(session_id) {
@@ -236,9 +238,14 @@ app.get('/api/v1/getAllNewConversation', function(req, res){
    });
 });
 
+app.get('/api/v1/claimConversation/:session_id/:advisor_id', function(req, res){
+   var session_id = req.params.session_id;
+   var advisor_id = req.params.advisor_id;
+   client.parse.claimConversation(session_id, advisor_id);
+   res.send("Success " + session_id);
+});
 
 app.post('/api/v1/sendMessage', function(req, res){
-
   var a_id = req.param.advisor_id;  // advisor id
   var session_id = req.param.session_id;
   var message = req.param.message;
@@ -262,9 +269,8 @@ app.get('/api/v1/getConversation', function(req, res){
   });
 });
 
-app.get('/api/v1/endConversation', function(req, res){
-  var s_id = req.param.session_id;
-  console.log("session " + s_id);
+app.get('/api/v1/endConversation/:session_id', function(req, res){
+  var s_id = req.params.session_id;
   client.parse.endConversation(s_id);
   res.send("End Conversation Done: " + s_id);
 });
