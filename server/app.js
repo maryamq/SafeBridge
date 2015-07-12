@@ -62,13 +62,44 @@ client.parse = (function() {
   jsKey = "2X5eB9njA4iVStOfhnk69y7kggwxJ6MCviEPQW2T",
   Client_Map  = Parse.Object.extend("client_map"),
   Conversation  = Parse.Object.extend("conversation"),
+  Advisor  = Parse.Object.extend("advisor"),
   getPhoneHash, generatePhoneHash, getPhoneFromHash, hashCode,
   saveConversation, endConversation, getConversation, claimConversation,
   createConversation, getAllNewConversation, getSingleConversation,
-  getConversationAfterDate, getAllConversationsForAdvisor;
+  getConversationAfterDate, getAllConversationsForAdvisor,
+  getAdvisor, updateAdvisorAvailability;
 
   // Initialize Parse
   Parse.initialize(appId, jsKey);
+
+  getAdvisor = function(advisor_id, onSuccess) {
+     var query = new Parse.Query(Advisor);
+     query.equalTo("user_name", advisor_id);
+     query.find().then(function(result){
+         onSuccess(result);
+     });
+  }
+
+  updateAdvisorAvailability = function(advisor_id, available) {
+    getAdvisor(advisor_id, function(result) {
+         if (!result) {
+          return;
+         }
+         var advisor = result[0];
+         advisor.set("available", available);
+         advisor.save(null, {
+      success: function(new_row) {
+        console.log('New object created with objectId: ' + new_row.id);
+      },
+      error: function(new_row, error) {
+        // Execute any logic that should take place if the save fails.
+        // error is a Parse.Error with an error code and message.
+        console.log('Failed to create new object, with error code: ' + error.message);
+
+      }
+    });
+    });
+  };
 
   //***************** Convesation method *********************************
   saveConversation = function(advisor_id, session_id, message, is_client, onSuccess) {
@@ -253,19 +284,18 @@ client.parse = (function() {
     getAllNewConversation: getAllNewConversation,
     getSingleConversation: getSingleConversation,
     getConversationAfterDate: getConversationAfterDate,
-    getAllConversationsForAdvisor: getAllConversationsForAdvisor
+    getAllConversationsForAdvisor: getAllConversationsForAdvisor,
+    getAdvisor: getAdvisor,
+    updateAdvisorAvailability: updateAdvisorAvailability
+
   }
 }());
 
 
 app.get('/api/v1/test', function(req, res){
    var session_id = "abc";
-   client.parse.getConversation(session_id, function(result) {
-      for(var i = 0; i<result.length; i++) {
-        console.log(result[i]);
-      }
-   });
-   res.send("Hello World")
+   client.twilio.sendMessage(session_id, message);
+   
 
 });
 
@@ -305,8 +335,6 @@ app.get('/api/v1/getUniqueConversation/:advisor_id', function(req, res){
        res.send(arr);   
    });
 });
-
-
 
 app.get('/api/v1/claimConversation/:session_id/:advisor_id', function(req, res){
    var session_id = req.params.session_id;
@@ -348,6 +376,23 @@ app.get('/api/v1/endConversation/:session_id', function(req, res){
   res.send("End Conversation Done: " + s_id);
 });
 
+app.get('/api/v1/getAdvisor/:advisor_id', function(req, res){
+  var a_id = req.params.advisor_id;
+  client.parse.getAdvisor(a_id, function(result) {
+    if (result) {
+      res.send(result);
+    } else {
+      res.send(false);
+    }
+  });
+  });
+
+app.get('/api/v1/updateAdvisorAvailability/:advisor_id/:available', function(req, res){
+    var a_id = req.params.advisor_id;
+    var available = req.params.available == "true";
+    client.parse.updateAdvisorAvailability(a_id, available);
+    res.send("Done");
+  });
 
 app.post('/api/v1/serviceName', function(req, res){
   /*
