@@ -1,0 +1,48 @@
+<!--<ion-view view-title="Feed">
+  <ion-content class="padding">
+    <div class="list card">
+      <div class="item item-divider">97492379</div>
+      <div class="item item-body">
+        <div>
+          There is a fire in <b>sector 3</b> #helpSH
+        </div>
+      </div>
+    </div>
+    <div class="list card">
+      <div class="item item-divider">76787623</div>
+      <div class="item item-body">
+        <div>
+          I need help ASAP! #helpSH
+        </div>
+      </div>
+    </div>
+    <div class="list card">
+      <div class="item item-divider">2368858230</div>
+      <div class="item item-body">
+        <div>
+          Should I report him to the authorities? #helpSH
+        </div>
+      </div>
+    </div>
+  </ion-content>
+</ion-view>-->
+
+<ion-view view-title="Feed">
+  <ion-content>
+    <div class="list">
+      <div class="item item-button-right" ng-repeat="chat in feeds" type="item-text-wrap" href="#/tab/chats/{{chat.id}}">
+        
+        <h2>{{chat.name}}</h2>
+        <p>{{chat.lastText}}</p>
+        <button class="button button-positive">
+          <i class="icon ion-checkmark-circled"></i>
+        </button>
+        <!--<i class="icon ion-chevron-right icon-accessory"></i>
+
+        <ion-option-button class="button-assertive" ng-click="remove(chat)">
+          Delete
+        </ion-option-button>-->
+      </div>
+    </div>
+  </ion-content>
+</ion-view>
