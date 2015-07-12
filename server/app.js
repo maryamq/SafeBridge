@@ -404,7 +404,11 @@ app.post('/api/v1/receiveMessage', function(req, res){
   client.parse.getPhoneHash(phoneNumber, function(phoneHash) {
     if(phoneHash === '') {
       client.parse.generatePhoneHash(phoneNumber, function(phoneHash){
-        twiml.sms('Thank you for reaching out to us! We are rapidly matching you with a community advocate. We will respond within 3 minutes. Until then, please read the following information so you understand your rights as a member of our community.')
+        twiml.sms('Thank you for reaching out to The Sanctuary San Francisco. We are pairing you with a community advocate and we will have one connected with you within 10 minutes.')
+        twiml.sms('Until then, please read the following information so you understand your rights as a member of our community.')
+        twiml.sms('If you are in immediate danger, PLEASE call local police immediately (911).')
+        twiml.sms('If there is any chance the your phone is being monitored by spyware, do not continue! Find a safe phone to contact us. To learn more about spyware, please visit the webpage http://bit.ly/1K2tAes.')
+        twiml.sms('We are here to support you. Please know that in the State of California, you have privacy priviledges that are afforded between you and your counselor. However, in we may have to disclose this information in a criminal proceeding regarding a crime allegedly perpetrated against the yourself or another household member, or in a proceeding related to child abuse. We are here to support you and are happy to answer any questions you may have.')
         client.parse.createConversation(phoneHash, smsMessage, true, function(conversationResp) {
           res.writeHead(200, {'Content-Type': 'text/xml'});
           res.end(twiml.toString());
