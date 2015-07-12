@@ -65,7 +65,7 @@ client.parse = (function() {
   getPhoneHash, generatePhoneHash, getPhoneFromHash, hashCode,
   saveConversation, endConversation, getConversation, claimConversation,
   createConversation, getAllNewConversation, getSingleConversation,
-  getConversationAfterDate;
+  getConversationAfterDate, getAllConversationsForAdvisor;
 
   // Initialize Parse
   Parse.initialize(appId, jsKey);
@@ -140,6 +140,15 @@ client.parse = (function() {
          onSuccess(result);
      });
   };
+
+  getAllConversationsForAdvisor = function(advisor_id, onSuccess) {
+      var query = new Parse.Query(Conversation);
+      query.equalTo("advisor_id", advisor_id);
+      query.find().then(function(result) {
+        onSuccess(result);
+      });
+  }
+
 
   claimConversation = function(session_id, a_id) {
     var query = new Parse.Query(Conversation);
@@ -243,7 +252,8 @@ client.parse = (function() {
     createConversation: createConversation,
     getAllNewConversation: getAllNewConversation,
     getSingleConversation: getSingleConversation,
-    getConversationAfterDate: getConversationAfterDate
+    getConversationAfterDate: getConversationAfterDate,
+    getAllConversationsForAdvisor: getAllConversationsForAdvisor
   }
 }());
 
@@ -274,6 +284,25 @@ app.get('/api/v1/getConversationAfterDate/:session_id/:date', function(req, res)
    console.log("1");
    client.parse.getConversationAfterDate(session_id, new Date(date), function(result) {
      res.send(result);
+   });
+});
+
+app.get('/api/v1/getUniqueConversation/:advisor_id', function(req, res){
+   var advisor_id = req.params.advisor_id;
+   var unique = {};
+   client.parse.getAllConversationsForAdvisor(advisor_id, function(result) {
+       var unique = {};
+       for (var i =0; i<result.length; i++) {
+           var key = result[i].attributes.session_id;
+           unique[key] = result[i];
+       }
+
+       var arr = [];
+       for (var k in unique){
+         arr.push(unique[k]);
+       }
+
+       res.send(arr);   
    });
 });
 
