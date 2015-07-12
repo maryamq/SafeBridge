@@ -36,11 +36,43 @@ client.parse = (function() {
   var appId = "EskNAzWggrRsCs2y0BFSEGUoHoNhzOASNFfqGVi9",
   jsKey = "2X5eB9njA4iVStOfhnk69y7kggwxJ6MCviEPQW2T",
   Client_Map  = Parse.Object.extend("client_map"),
-  getPhoneHash, generatePhoneHash, getPhoneFromHash, hashCode;
+  Conversation  = Parse.Object.extend("conversation"),
+  getPhoneHash, generatePhoneHash, getPhoneFromHash, hashCode,
+  saveConversation;
 
   // Initialize Parse
   Parse.initialize(appId, jsKey);
 
+  saveConversation = function(advisor_id, session_id, message, onSuccess) {
+    var new_conv_entry = new Conversation();
+    new_conv_entry.set("advisor_id", advisor_id);
+    new_conv_entry.set("session_id", session_id);
+    new_conv_entry.set("uq_code", session_id);
+    new_conv_entry.set("msg", message);
+
+    new_conv_entry.save(null, {
+      success: function(new_row) {
+        // Execute any logic that should take place after the object is saved.
+        if (onSuccess) {
+          onSuccess(new_row.id);
+        }
+        
+        console.log('New object created with objectId: ' + new_row.id);
+      },
+      error: function(new_row, error) {
+        // Execute any logic that should take place if the save fails.
+        // error is a Parse.Error with an error code and message.
+        console.log('Failed to create new object, with error code: ' + error.message);
+        if (onSuccess) {
+          onSuccess("");
+        }
+        
+      }
+    });
+  };
+
+
+  // *********************** PHone Hash Methods **********************/
   // Returns phone hash code from the db.
   getPhoneHash = function(phone_num, onSuccess) {
     var query = new Parse.Query(Client_Map);
@@ -102,11 +134,12 @@ client.parse = (function() {
     }
     return hash;
   }
-  
+
   return {
     getPhoneHash : getPhoneHash,
     generatePhoneHash: generatePhoneHash,
-    getPhoneFromHash: getPhoneFromHash
+    getPhoneFromHash: getPhoneFromHash,
+    saveConversation: saveConversation
   };
 
 
@@ -119,15 +152,31 @@ app.get('/api/v1/sendMessage', function(req, res){
   //accessing get params
     req.params.id
     */
-  var chat_id = req.param.chat_id;  // id of the session
-  var message = req.param.message;
+    /*
+  var a_id = req.param.a_id;  // advisor id
+  var session_id = req.param.s_id;
+  var message = req.param.message;*/
 
-  // look up the receiver chat id.
+  var a_id = "111111";  // advisor id
+  var session_id = "abc"
+  var message = "Hello World"
+
+
+  
+  // Look up phone has via session Id.
+  client.parse.getPhoneFromHash(session_id, function(phone_num) {
+    if (phone_num == "") {
+      console.log("GetPhoneFromHash returned empty phone_num. Should not be the case");
+      return;
+    }
+    client.parse.saveConversation(a_id, session_id, message);
+    client.twilio.sendMessage(phone_num, message);
+  });
 
   var response = "hello world";
   client.parse.getPhoneFromHash("abc", function(value) {
     console.log("success " + value);
-  })
+  });
   res.send(response)
 });
 
