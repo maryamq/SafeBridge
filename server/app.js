@@ -47,7 +47,7 @@ client.parse = (function() {
   Conversation  = Parse.Object.extend("conversation"),
   getPhoneHash, generatePhoneHash, getPhoneFromHash, hashCode,
   saveConversation, endConversation, getConversation, claimConversation,
-  createConversation, getAllNewConversation;
+  createConversation, getAllNewConversation, getConversationAfterDate;
 
   // Initialize Parse
   Parse.initialize(appId, jsKey);
@@ -88,6 +88,15 @@ client.parse = (function() {
          onSuccess(result);
      });
   };
+
+  getConversationAfterDate = function(session_id, date, onSuccess) {
+    var query = new Parse.Query(Conversation);
+    query.equalTo("session_id", session_id);
+    query.greaterThanOrEqualTo( "createdAt", date);
+    query.find().then(function(result) {
+      onSuccess(result);
+    });
+  }
 
   createConversation = function(session_id, smsMessage, onSuccess) {
     saveConversation(null, session_id, smsMessage, function(blank) {
@@ -205,7 +214,8 @@ client.parse = (function() {
     getConversation: getConversation,
     claimConversation: claimConversation,
     createConversation: createConversation,
-    getAllNewConversation: getAllNewConversation
+    getAllNewConversation: getAllNewConversation,
+    getConversationAfterDate: getConversationAfterDate
   }
 }());
 
@@ -229,6 +239,16 @@ app.get('/api/v1/getAllNewConversation', function(req, res){
      res.send(result);
    });
 });
+
+app.get('/api/v1/getConversationAfterDate/:session_id/:date', function(req, res){
+   var session_id = req.params.session_id;
+   var date = req.params.date;
+   console.log("1");
+   client.parse.getConversationAfterDate(session_id, new Date(date), function(result) {
+     res.send(result);
+   });
+});
+
 
 
 app.get('/api/v1/claimConversation/:session_id/:advisor_id', function(req, res){
