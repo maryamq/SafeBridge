@@ -296,7 +296,6 @@ app.post('/api/v1/receiveMessage', function(req, res){
   var phoneNumber = req.body.From;
   var smsMessage = req.body.Body;
   client.parse.getPhoneHash(phoneNumber, function(phoneHash) {
-    phoneHash = 'new'
     if(phoneHash === '') {
       client.parse.generatePhoneHash(phoneNumber, function(phoneHash){
         twiml.sms('Thank you for reaching out to us! We are rapidly matching you with a community advocate. We will respond within 3 minutes. Until then, please read the following information so you understand your rights as a member of our community.')
