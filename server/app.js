@@ -46,12 +46,8 @@ client.parse = (function() {
   Client_Map  = Parse.Object.extend("client_map"),
   Conversation  = Parse.Object.extend("conversation"),
   getPhoneHash, generatePhoneHash, getPhoneFromHash, hashCode,
-<<<<<<< HEAD
   saveConversation, endConversation, getConversation, claimConversation,
-  createConversation;
-=======
-  saveConversation, endConversation, getConversation, claimConversation,getAllNewConversation;
->>>>>>> c508cd7ac5909fe46559234042731fbb43fe5e91
+  createConversation, getAllNewConversation;
 
   // Initialize Parse
   Parse.initialize(appId, jsKey);
