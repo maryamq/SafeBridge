@@ -256,9 +256,8 @@ app.post('/api/v1/sendMessage', function(req, res){
   res.send("Success");
 });
 
-
-app.get('/api/v1/getConversation', function(req, res){
-  var session_id = req.param.session_id;
+app.get('/api/v1/getConversation/:session_id', function(req, res){
+  var session_id = req.params.session_id;
   client.parse.getConversation(session_id, function(result) {
     res.send(result);
   });
