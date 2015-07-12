@@ -46,8 +46,12 @@ client.parse = (function() {
   Client_Map  = Parse.Object.extend("client_map"),
   Conversation  = Parse.Object.extend("conversation"),
   getPhoneHash, generatePhoneHash, getPhoneFromHash, hashCode,
+<<<<<<< HEAD
   saveConversation, endConversation, getConversation, claimConversation,
   createConversation;
+=======
+  saveConversation, endConversation, getConversation, claimConversation,getAllNewConversation;
+>>>>>>> c508cd7ac5909fe46559234042731fbb43fe5e91
 
   // Initialize Parse
   Parse.initialize(appId, jsKey);
@@ -97,25 +101,39 @@ client.parse = (function() {
     });
   };
 
-  claimConversation = function(a_id, phone_hash) {
-     var new_conv_entry = new Conversation();
-     new_conv_entry.set("advisor_id", a_id);
-     new_conv_entry.set("uq_code", phone_hash);
-     new_conv_entry.set("session_status", "active");
-     new_conv_entry.update({
-        success: function(myObject) {
-          console.log("UpdateConversation: Update successful");
-        },
-        error: function(myObject, error) {
-          console.log("UpdateConversation: Update failed");
-        }
+getAllNewConversation = function(onSuccess) {
+     var new_conv_entry = new Parse.Query(Conversation);
+     new_conv_entry.doesNotExist("advisor_id");
+     new_conv_entry.find().then(function(result){
+         onSuccess(result);
      });
   };
-  
-  endConversation = function(a_id, phone_hash) {
+
+
+
+
+  claimConversation = function(session_id, a_id) {
     var query = new Parse.Query(Conversation);
-    query.equalTo("uq_code", phone_hash);
-    query.find().then(function(result){
+     console.log("session _id" + session_id + "a_id " + a_id);
+     query.equalTo("session_id", session_id);
+     query.find().then(function(results){
+      for(var i = 0; i<results.length; i++) {
+         var new_conv_entry = results[i];
+         console.log("entry " + new_conv_entry.message);
+         new_conv_entry.set("advisor_id", a_id);
+         new_conv_entry.set("session_id", session_id);
+         new_conv_entry.set("uq_code", session_id);
+         new_conv_entry.set("session_status", true);
+         new_conv_entry.save();
+      }
+    });
+  };
+  
+  endConversation = function(session_id) {
+    var query = new Parse.Query(Conversation);
+    query.equalTo("session_id", session_id);
+    query.find().then(function(results){
+      console.log("results " + results);
       for(var i = 0; i<results.length; i++) {
          results[i].destroy({});
       }
@@ -194,7 +212,8 @@ client.parse = (function() {
     endConversation: endConversation,
     getConversation: getConversation,
     claimConversation: claimConversation,
-    createConversation: createConversation
+    createConversation: createConversation,
+    getAllNewConversation: getAllNewConversation
   };
 
 
@@ -212,15 +231,27 @@ app.get('/api/v1/test', function(req, res){
 
 });
 
-app.get('/api/v1/sendMessage', function(req, res){
-  /*
-  service code here
-  //accessing get params
-    req.params.id
-  */
 
-  var a_id = req.param.a_id;  // advisor id
-  var session_id = req.param.s_id;
+app.get('/api/v1/getAllNewConversation', function(req, res){
+   //var session_id = "abc";
+   console.log("1");
+   client.parse.getAllNewConversation(function(result) {
+     res.send(result);
+   });
+});
+
+
+app.get('/api/v1/claimConversation/:session_id/:advisor_id', function(req, res){
+   var session_id = req.params.session_id;
+   var advisor_id = req.params.advisor_id;
+   client.parse.claimConversation(session_id, advisor_id);
+   res.send("Success " + session_id);
+});
+
+
+app.post('/api/v1/sendMessage', function(req, res){
+  var a_id = req.param.advisor_id;  // advisor id
+  var session_id = req.param.session_id;
   var message = req.param.message;
 
   // Look up phone has via session Id.
@@ -232,19 +263,24 @@ app.get('/api/v1/sendMessage', function(req, res){
     client.parse.saveConversation(a_id, session_id, message);
     client.twilio.sendMessage(phone_num, message);
   });
+  res.send("Success");
+});
 
-  var response = "hello world";
-  client.parse.getPhoneFromHash("abc", function(value) {
-    console.log("success " + value);
+
+app.get('/api/v1/getConversation', function(req, res){
+  var session_id = req.param.session_id;
+  client.parse.getConversation(session_id, function(result) {
+    res.send(result);
   });
-  res.send(response)
 });
 
 
-app.get('/api/v1/endConversation', function(req, res){
-  var a_id = req.param.a_id;
-  var phone_hash = req.param.phone_hash;
+app.get('/api/v1/endConversation/:session_id', function(req, res){
+  var s_id = req.params.session_id;
+  client.parse.endConversation(s_id);
+  res.send("End Conversation Done: " + s_id);
 });
+
 
 app.post('/api/v1/serviceName', function(req, res){
   /*
@@ -255,12 +291,8 @@ app.post('/api/v1/serviceName', function(req, res){
     res.send(response);
   });
 
+
 app.post('/api/v1/receiveMessage', function(req, res){
-  /*
-  service code here
-  //accessing post params
-    req.body
-  */
   var twiml = new twilioResp.TwimlResponse();
   var phoneNumber = req.body.From;
   var smsMessage = req.body.Body;
@@ -287,46 +319,9 @@ app.post('/api/v1/receiveMessage', function(req, res){
       });
     }
   })
-
-  // parseBackend.find('client_map', {where: {ph_num: phoneNumber}, limit: 1}, function (err, ) {
-  //   if(!err) {
-  //     var results = response.results;
-  //     if(results.length === 0) {
-  //       parseBackend.
-  //     }
-  //     var parseObject = response.results[0]
-  //     if(typeof parseObject === 'undefined') {
-  //       throw new Error('The unique_id ' + uniqueId + ' could not be found.')
-  //     }
-  //     var phoneNumber = ("+1" + parseObject.ph_num)
-  //     delete parseObject
-  //     client.twilio.sendMessage({
-  //         to: phoneNumber,
-  //         from: '+19783636041',
-  //         body: smsMessage
-  //     }, function(err, responseData) {
-  //         if (!err) {
-  //           res.send("success");
-  //         } else {
-  //           throw new Error('There was an issue sending the message to the client.')
-  //         }
-  //     });
-  //   } else {
-  //     throw new Error('The unique_id ' + uniqueId + ' could not be found.')
-  //   }
-  // });
-  // res.writeHead(200, {'Content-Type': 'text/xml'});
-  // res.write(resp.toString());
-  // res.end(twiml.toString());
-  // resp.sms('hello world')
-  // console.log(req.body)
-  // console.log(resp)
-  // console.log(Object.keys(resp))
-
 });
-
 
 
 app.use(express.static(__dirname + '/public'));
 
-app.listen(process.env.PORT || 2000);
+app.listen(process.env.PORT || 4000);
