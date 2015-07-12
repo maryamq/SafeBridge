@@ -53,12 +53,13 @@ client.parse = (function() {
   Parse.initialize(appId, jsKey);
 
   //***************** Convesation method *********************************
-  saveConversation = function(advisor_id, session_id, message, onSuccess) {
+  saveConversation = function(advisor_id, session_id, message, is_client, onSuccess) {
     var new_conv_entry = new Conversation();
     new_conv_entry.set("advisor_id", advisor_id);
     new_conv_entry.set("session_id", session_id);
     new_conv_entry.set("uq_code", session_id);
     new_conv_entry.set("msg", message);
+    new_conv_entry.set("is_client", is_client);
 
     new_conv_entry.save(null, {
       success: function(new_row) {
@@ -98,8 +99,8 @@ client.parse = (function() {
     });
   }
 
-  createConversation = function(session_id, smsMessage, onSuccess) {
-    saveConversation(null, session_id, smsMessage, function(blank) {
+  createConversation = function(session_id, smsMessage, is_client, onSuccess) {
+    saveConversation(null, session_id, smsMessage, is_client, function(blank) {
       getConversation(session_id, function(conversationResp) {
         onSuccess(conversationResp);
       });
@@ -270,7 +271,7 @@ app.post('/api/v1/sendMessage', function(req, res){
       console.log("GetPhoneFromHash returned empty phone_num. Should not be the case");
       return;
     }
-    client.parse.saveConversation(a_id, session_id, message);
+    client.parse.saveConversation(a_id, session_id, message, false);
     client.twilio.sendMessage(phone_num, message);
   });
   res.send("Success");
@@ -309,7 +310,7 @@ app.post('/api/v1/receiveMessage', function(req, res){
     if(phoneHash === '') {
       client.parse.generatePhoneHash(phoneNumber, function(phoneHash){
         twiml.sms('Thank you for reaching out to us! We are rapidly matching you with a community advocate. We will respond within 3 minutes. Until then, please read the following information so you understand your rights as a member of our community.')
-        client.parse.createConversation(phoneHash, smsMessage, function(conversationResp) {
+        client.parse.createConversation(phoneHash, smsMessage, true, function(conversationResp) {
           res.writeHead(200, {'Content-Type': 'text/xml'});
           res.end(twiml.toString());
         })
@@ -317,7 +318,7 @@ app.post('/api/v1/receiveMessage', function(req, res){
     } else {
       client.parse.getConversation(phoneHash, function(conversationResp) {
         if(conversationResp.length === 0) {
-          client.parse.createConversation(phoneHash, smsMessage, function(conversationResp) {
+          client.parse.createConversation(phoneHash, smsMessage, true, function(conversationResp) {
             res.writeHead(200, {'Content-Type': 'text/xml'});
             res.end(twiml.toString());
           })
