@@ -260,10 +260,10 @@ app.get('/api/v1/claimConversation/:session_id/:advisor_id', function(req, res){
 });
 
 
-app.post('/api/v1/sendMessage', function(req, res){
-  var a_id = req.param.advisor_id;  // advisor id
-  var session_id = req.param.session_id;
-  var message = req.param.message;
+app.post('/api/v1/sendMessage/:session_id/:advisor_id/:message', function(req, res){
+  var a_id = req.params.advisor_id;  // advisor id
+  var session_id = req.params.session_id;
+  var message = req.params.message;
 
   // Look up phone has via session Id.
   client.parse.getPhoneFromHash(session_id, function(phone_num) {
