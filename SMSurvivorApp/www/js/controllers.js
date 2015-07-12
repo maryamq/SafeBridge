@@ -71,15 +71,24 @@ angular.module('starter.controllers', [])
 .controller('ChatDetailCtrl', function($scope, $stateParams, $rootScope, Conversations) {
   //$scope.chat = Chats.get($stateParams.chatId);
   console.log($stateParams.chatId);
-  Conversations.getForSession($stateParams.chatId).success(function(data){
-    console.log(data);
-    $scope.chats = data;
-  });
+  $scope.clientState = true;
+  $scope.pageRefresh = function(){
+    Conversations.getForSession($stateParams.chatId).success(function(data){
+      console.log(data);
+      $scope.chats = data;
+    });  
+  }
+  $scope.pageRefresh();
+
+  setInterval(function () {
+    $scope.pageRefresh();
+  }, 2000);
 
   $scope.sendMessage = function(){
     //console.log($scope.data.message);
     Conversations.postMessage({message:$scope.data.message, session_id:$stateParams.chatId, advisor_id: $rootScope.advisor_id}).success(function(data){
       console.log(data);
+      $scope.pageRefresh();
     });
   }
 })
