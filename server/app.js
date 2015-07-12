@@ -401,7 +401,6 @@ app.post('/api/v1/receiveMessage', function(req, res){
   var twiml = new twilioResp.TwimlResponse();
   var phoneNumber = req.body.From;
   var smsMessage = req.body.Body;
-  console.log('hit')
   client.parse.getPhoneHash(phoneNumber, function(phoneHash) {
     if(phoneHash === '') {
       client.parse.generatePhoneHash(phoneNumber, function(phoneHash){
@@ -412,7 +411,6 @@ app.post('/api/v1/receiveMessage', function(req, res){
         twiml.sms('If there is any chance the your phone is being monitored by spyware, do not continue! Find a safe phone to contact us. To learn more about spyware, please visit the webpage http://bit.ly/1K2tAes.')
         twiml.sms('We are here to support you. Please know that in the State of California, you have privacy priviledges that are afforded between you and your counselor. However, in we may have to disclose this information in a criminal proceeding regarding a crime allegedly perpetrated against the yourself or another household member, or in a proceeding related to child abuse. \n\nWe are here to support you and are happy to answer any questions you may have. We will respond very shortly!')
         client.parse.createConversation(phoneHash, smsMessage, true, function(conversationResp) {
-          console.log('new')
           res.writeHead(200, {'Content-Type': 'text/xml'});
           res.end(twiml.toString());
         })
@@ -421,7 +419,6 @@ app.post('/api/v1/receiveMessage', function(req, res){
       client.parse.getSingleConversation(phoneHash, function(conversationResp) {
         if(typeof conversationResp === 'undefined') {
           client.parse.createConversation(phoneHash, smsMessage, true, function(conversationResp) {
-            console.log('undefined convo')
             res.writeHead(200, {'Content-Type': 'text/xml'});
             res.end(twiml.toString());
           })
@@ -429,7 +426,6 @@ app.post('/api/v1/receiveMessage', function(req, res){
           var attributes = conversationResp.attributes || {}
           var advisorId = attributes.advisor_id ||  null
           client.parse.saveConversation(advisorId, phoneHash, smsMessage, true, function(blank) {
-            console.log('defined convo')
             res.writeHead(200, {'Content-Type': 'text/xml'});
             res.end(twiml.toString());
           })
