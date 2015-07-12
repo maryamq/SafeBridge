@@ -38,11 +38,12 @@ client.parse = (function() {
   Client_Map  = Parse.Object.extend("client_map"),
   Conversation  = Parse.Object.extend("conversation"),
   getPhoneHash, generatePhoneHash, getPhoneFromHash, hashCode,
-  saveConversation;
+  saveConversation, endConversation, getConversation, claimConversation;
 
   // Initialize Parse
   Parse.initialize(appId, jsKey);
 
+  //***************** Convesation method *********************************
   saveConversation = function(advisor_id, session_id, message, onSuccess) {
     var new_conv_entry = new Conversation();
     new_conv_entry.set("advisor_id", advisor_id);
@@ -71,6 +72,42 @@ client.parse = (function() {
     });
   };
 
+
+
+  getConversation = function(session_id, onSuccess) {
+     var new_conv_entry = new Parse.Query(Conversation);
+     new_conv_entry.equalTo("session_id", session_id);
+     new_conv_entry.find().then(function(result){
+         onSuccess(result);
+     });
+  };
+
+
+  claimConversation = function(a_id, phone_hash) {
+     var new_conv_entry = new Conversation();
+     new_conv_entry.set("advisor_id", a_id);
+     new_conv_entry.set("uq_code", phone_hash);
+     new_conv_entry.set("session_status", "active");
+     new_conv_entry.update({
+        success: function(myObject) {
+          console.log("UpdateConversation: Update successful");
+        },
+        error: function(myObject, error) {
+          console.log("UpdateConversation: Update failed");
+        }
+     });
+  };
+  
+  endConversation = function(a_id, phone_hash) {
+    var query = new Parse.Query(Conversation);
+    query.equalTo("uq_code", phone_hash);
+    query.find().then(function(result){
+      for(var i = 0; i<results.length; i++) {
+         results[i].destroy({});
+      }
+    });
+  };
+  
 
   // *********************** PHone Hash Methods **********************/
   // Returns phone hash code from the db.
@@ -139,12 +176,26 @@ client.parse = (function() {
     getPhoneHash : getPhoneHash,
     generatePhoneHash: generatePhoneHash,
     getPhoneFromHash: getPhoneFromHash,
-    saveConversation: saveConversation
+    saveConversation: saveConversation,
+    endConversation: endConversation,
+    getConversation: getConversation,
+    claimConversation: claimConversation
   };
 
 
 }());
 
+
+app.get('/api/v1/test', function(req, res){
+   var session_id = "abc";
+   client.parse.getConversation(session_id, function(result) {
+      for(var i = 0; i<result.length; i++) {
+        console.log(result[i]);
+      }
+   });
+   res.send("Hello World")
+
+});
 
 app.get('/api/v1/sendMessage', function(req, res){
   /*
@@ -152,14 +203,10 @@ app.get('/api/v1/sendMessage', function(req, res){
   //accessing get params
     req.params.id
     */
-    /*
+
   var a_id = req.param.a_id;  // advisor id
   var session_id = req.param.s_id;
-  var message = req.param.message;*/
-
-  var a_id = "111111";  // advisor id
-  var session_id = "abc"
-  var message = "Hello World"
+  var message = req.param.message;
 
 
   
@@ -181,8 +228,9 @@ app.get('/api/v1/sendMessage', function(req, res){
 });
 
 app.get('/api/v1/endConversation', function(req, res){
-  var session_id = req.param.session_id;
-  // delte data
+  var a_id = req.param.a_id;
+  var phone_hash = req.param.phone_hash;
+
 
 });
 
@@ -198,4 +246,4 @@ app.post('/api/v1/serviceName', function(req, res){
 
 app.use(express.static(__dirname + '/public'));
 
-app.listen(process.env.PORT || 3000);
+app.listen(process.env.PORT || 2000);
