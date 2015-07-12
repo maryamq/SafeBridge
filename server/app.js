@@ -37,8 +37,8 @@ app.use(function (req, res, next) {
 var client = {}
 client.twilio = (function() {
   // Twilio Credentials 
-  var accountSid = 'AC767c5031b3b645cb5e72855af845e2c1',
-  authToken = '2b2aed7ba2a3520c688f096bb04a2a59',
+  var accountSid = 'AC92a0190d479907c672610b0433b6fcc8',
+  authToken = '982761859812f01588900af41879a555',
   fromPhone =  '+16506812248',
   twilio = require('twilio')(accountSid, authToken),
   sendMessage;
