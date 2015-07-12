@@ -154,7 +154,7 @@ client.parse = (function() {
   }
 
   createConversation = function(session_id, smsMessage, is_client, onSuccess) {
-    saveConversation(null, session_id, smsMessage, is_client, function(blank) {
+    saveConversation(undefined, session_id, smsMessage, is_client, function(blank) {
       getConversation(session_id, function(conversationResp) {
         onSuccess(conversationResp);
       });
@@ -424,7 +424,7 @@ app.post('/api/v1/receiveMessage', function(req, res){
           })
         } else {
           var attributes = conversationResp.attributes || {}
-          var advisorId = attributes.advisor_id ||  null
+          var advisorId = attributes.advisor_id ||  undefined
           client.parse.saveConversation(advisorId, phoneHash, smsMessage, true, function(blank) {
             res.writeHead(200, {'Content-Type': 'text/xml'});
             res.end(twiml.toString());
