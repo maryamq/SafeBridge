@@ -87,14 +87,23 @@ angular.module('starter.controllers', [])
   //$scope.$on('$ionicView.enter', function(e) {
   //});
   
-  /*$scope.chats = Chats.all();
-  $scope.remove = function(chat) {
-    Chats.remove(chat);
-  }*/
-  Conversations.unique($rootScope.advisor_id).success(function (data) {
-    console.log(data);
-    $scope.chats = data;
-  });
+  //$scope.chats = Chats.all();
+  $scope.remove = function(session_id) {
+    Conversations.remove(session_id).success(function (data) {
+      console.log(data);
+      //$scope.chats = data;
+      $scope.chats = [];
+      $scope.pageRefresh();
+    });
+  }
+  $scope.pageRefresh = function(){
+
+    Conversations.unique($rootScope.advisor_id).success(function (data) {
+      console.log(data);
+      $scope.chats = data;
+    });  
+  }
+  $scope.pageRefresh();
 })
 
 .controller('ChatDetailCtrl', function($scope, $stateParams, $rootScope, Conversations) {
@@ -128,6 +137,11 @@ angular.module('starter.controllers', [])
     $scope.settings = data[0];
     console.log($scope.settings);
   });
+
+  $scope.logout = function(){
+    $rootScope.advisor_id = '';
+    window.location = "#/login";
+  }
 
   $scope.statusChange = function () {
     console.log($scope.settings.available);
