@@ -246,7 +246,7 @@ client.parse = (function() {
     new_client.save(null, {
       success: function(new_client) {
         // Execute any logic that should take place after the object is saved.
-        onSuccess(new_client.id);
+        onSuccess(hash);
         console.log('New object created with objectId: ' + new_client.id);
       },
       error: function(new_client, error) {
@@ -404,6 +404,7 @@ app.post('/api/v1/receiveMessage', function(req, res){
   client.parse.getPhoneHash(phoneNumber, function(phoneHash) {
     if(phoneHash === '') {
       client.parse.generatePhoneHash(phoneNumber, function(phoneHash){
+        console.log("New phone has that was generated " + phoneHash )
         twiml.sms('Thank you for reaching out to The Sanctuary San Francisco. We are pairing you with a community advocate and we will have one connected with you within 10 minutes. \n\nUntil then, please read the following information so you understand your rights as a member of our community.')
         // twiml.pause({length: 10})
         // twiml.sms('Until then, please read the following information so you understand your rights as a member of our community.')
