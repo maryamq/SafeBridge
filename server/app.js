@@ -131,6 +131,7 @@ client.parse = (function() {
   getConversation = function(session_id, onSuccess) {
      var new_conv_entry = new Parse.Query(Conversation);
      new_conv_entry.equalTo("session_id", session_id);
+     new_conv_entry.addAscending("createdAt");
      new_conv_entry.find().then(function(result){
          onSuccess(result);
      });
