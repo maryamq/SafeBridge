@@ -18,7 +18,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
       // org.apache.cordova.statusbar required
       StatusBar.styleLightContent();
     }
-    console.log($rootScope.advisor_id);
+    //console.log($rootScope.advisor_id);
     if ($rootScope.advisor_id === undefined){
         $state.go("login");
     }

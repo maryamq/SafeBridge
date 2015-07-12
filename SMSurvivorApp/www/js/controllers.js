@@ -1,12 +1,32 @@
 angular.module('starter.controllers', [])
 
-.controller('DashCtrl', function($scope, Feed, $rootScope) {
+.controller('DashCtrl', function($scope, Conversations, $rootScope) {
 
-  console.log($rootScope.org_id);
+  /*console.log($rootScope.org_id);
   $scope.feeds = Feed.all();
   $scope.remove = function(feed) {
     Feed.remove(feed);
+  }*/
+  $scope.advisor_id = $rootScope.advisor_id;
+  $scope.populate = function(){
+    Conversations.get().success(function(data){
+      $scope.conversations = data;
+      //console.log($scope.conversations);
+    });  
   }
+  $scope.populate();
+
+  $scope.claim = function(session_id){
+    //console.log(session_id+"    "+$scope.advisor_id);
+    Conversations.claim(session_id,$scope.advisor_id).success(function(data){
+      console.log(data);
+      //$scope.populate();
+      //$rootScope.session_id = session_id;
+      window.location = "#/tab/chats/"+session_id;
+
+    });
+  }
+
 })
 
 .controller('CreateCtrl', function($scope) {
@@ -20,7 +40,7 @@ angular.module('starter.controllers', [])
     Login.get($scope.$$childHead.username,$scope.$$childHead.password).success(function(data){
        // $scope.items=data.results;
        console.log(data.results[0]);
-       $rootScope.advisor_id = data.results[0].objectId;
+       $rootScope.advisor_id = data.results[0].user_name;
        $rootScope.org_id = data.results[0].org_id;
        window.location = "#/tab/dash";
     });
@@ -48,8 +68,20 @@ angular.module('starter.controllers', [])
   }
 })
 
-.controller('ChatDetailCtrl', function($scope, $stateParams, Chats) {
-  $scope.chat = Chats.get($stateParams.chatId);
+.controller('ChatDetailCtrl', function($scope, $stateParams, $rootScope, Conversations) {
+  //$scope.chat = Chats.get($stateParams.chatId);
+  console.log($stateParams.chatId);
+  Conversations.getForSession($stateParams.chatId).success(function(data){
+    console.log(data);
+    $scope.chats = data;
+  });
+
+  $scope.sendMessage = function(){
+    //console.log($scope.data.message);
+    Conversations.postMessage({message:$scope.data.message, session_id:$stateParams.chatId, advisor_id: $rootScope.advisor_id}).success(function(data){
+      console.log(data);
+    });
+  }
 })
 
 .controller('AccountCtrl', function($scope) {

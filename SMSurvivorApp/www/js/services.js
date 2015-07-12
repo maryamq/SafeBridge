@@ -156,6 +156,32 @@ angular.module('starter.services', [])
     }
 }])
 
+.factory('Conversations',['$http',function($http){
+    return {
+        
+        get:function(){
+            return $http.get('http://ec2-52-2-162-93.compute-1.amazonaws.com:3000/api/v1/getAllNewConversation', {
+                
+            });
+        },
+        claim:function(a,b){
+            return $http.get('http://ec2-52-2-162-93.compute-1.amazonaws.com:3000/api/v1/claimConversation/'+a+'/'+b, {
+                
+            });
+        },
+        getForSession:function(session_id){
+            return $http.get('http://ec2-52-2-162-93.compute-1.amazonaws.com:3000/api/v1/getConversation/'+session_id, {
+                
+            });
+        },
+        postMessage:function(data){
+            return $http.post('http://ec2-52-2-162-93.compute-1.amazonaws.com:3000/api/v1/sendMessage', data, {
+                
+            });
+        }
+    }
+}])
+
 .value('PARSE_CREDENTIALS',{
     APP_ID: 'EskNAzWggrRsCs2y0BFSEGUoHoNhzOASNFfqGVi9',
     REST_API_KEY:'LbFAPoN4fjk6EFTKyWrWslUXuivRNGxZpLj1pt5E'
