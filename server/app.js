@@ -42,13 +42,18 @@ client.twilio = (function() {
 client.parse = (function() {
   var appId = "EskNAzWggrRsCs2y0BFSEGUoHoNhzOASNFfqGVi9",
   jsKey = "2X5eB9njA4iVStOfhnk69y7kggwxJ6MCviEPQW2T",
+  Advisor = Parse.Object.extend("advisor"),
+  Availability = Parse.Object.extend("availability"),
   Client_Map  = Parse.Object.extend("client_map"),
   Conversation  = Parse.Object.extend("conversation"),
+  Organization = Parse.Object.extend("organization"),
   getPhoneHash, generatePhoneHash, getPhoneFromHash, hashCode,
-  saveConversation, endConversation, getConversation, claimConversation;
+  saveConversation, endConversation, getConversation, claimConversation, getAccountInfo;
 
   // Initialize Parse
   Parse.initialize(appId, jsKey);
+
+  
 
   //***************** Convesation method *********************************
   saveConversation = function(advisor_id, session_id, message, onSuccess) {
@@ -78,8 +83,6 @@ client.parse = (function() {
       }
     });
   };
-
-
 
   getConversation = function(session_id, onSuccess) {
      var new_conv_entry = new Parse.Query(Conversation);
@@ -180,6 +183,21 @@ client.parse = (function() {
     return hash;
   }
 
+//account method
+  getAccountInfo = function(advisor_id, onSuccess) {
+    var query = new Parse.Query(Advisor);
+    query.equalTo("objectId", advisor_id);
+    query.find().then(function(result) {
+      if (typeof(result) === "undefined") {
+        console.log("Error: No existing advisor for this advisor_id");
+        onSuccess("");
+      } else {
+        onSuccess(result);
+      }
+    });
+  }
+
+
   return {
     getPhoneHash : getPhoneHash,
     generatePhoneHash: generatePhoneHash,
@@ -187,10 +205,9 @@ client.parse = (function() {
     saveConversation: saveConversation,
     endConversation: endConversation,
     getConversation: getConversation,
-    claimConversation: claimConversation
+    claimConversation: claimConversation,
+    getAccountInfo: getAccountInfo
   };
-
-
 }());
 
 
@@ -204,14 +221,6 @@ app.get('/api/v1/test', function(req, res){
    res.send("Hello World")
 
 });
-
-app.get('/api/v1/sendMessage', function(req, res){
-  /*
-  service code here
-  //accessing get params
-    req.params.id
-  */
-
 
 app.post('/api/v1/sendMessage', function(req, res){
 
@@ -239,6 +248,13 @@ app.post('/api/v1/sendMessage', function(req, res){
 app.get('/api/v1/getConversation', function(req, res){
   var session_id = req.param.session_id;
   client.parse.getConversation(session_id, function(result) {
+    res.send(result);
+  });
+});
+
+app.get('/api/v1/getAccountInfo', function(req, res){
+  var advisor_id = req.param.advisor_id;
+  client.parse.getAccountInfo(advisor_id, function(result) {
     res.send(result);
   });
 });
@@ -304,14 +320,7 @@ app.post('/api/v1/receiveMessage', function(req, res){
   // res.end(resp);
 });
 
-app.get('/api/v1/account', function(req, res){
-  /*
-  service code here
-  //accessing post params
-    req.body
-  */
-  res.send(response);
-});
+// ****
 
 app.use(express.static(__dirname + '/public'));
 
