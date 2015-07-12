@@ -37,8 +37,8 @@ app.use(function (req, res, next) {
 var client = {}
 client.twilio = (function() {
   // Twilio Credentials 
-  var accountSid = 'AC92a0190d479907c672610b0433b6fcc8',
-  authToken = '982761859812f01588900af41879a555',
+  var accountSid = 'AC767c5031b3b645cb5e72855af845e2c1',
+  authToken = '2b2aed7ba2a3520c688f096bb04a2a59',
   fromPhone =  '+16506812248',
   twilio = require('twilio')(accountSid, authToken),
   sendMessage;
@@ -404,11 +404,12 @@ app.post('/api/v1/receiveMessage', function(req, res){
   client.parse.getPhoneHash(phoneNumber, function(phoneHash) {
     if(phoneHash === '') {
       client.parse.generatePhoneHash(phoneNumber, function(phoneHash){
-        twiml.sms('Thank you for reaching out to The Sanctuary San Francisco. We are pairing you with a community advocate and we will have one connected with you within 10 minutes.')
-        twiml.sms('Until then, please read the following information so you understand your rights as a member of our community.')
-        twiml.sms('If you are in immediate danger, PLEASE call local police immediately (911).')
+        twiml.sms('Thank you for reaching out to The Sanctuary San Francisco. We are pairing you with a community advocate and we will have one connected with you within 10 minutes. \n\nUntil then, please read the following information so you understand your rights as a member of our community.')
+        // twiml.pause({length: 10})
+        // twiml.sms('Until then, please read the following information so you understand your rights as a member of our community.')
+        twiml.sms('If you are in immediate danger, PLEASE call local police immediately at 911.')
         twiml.sms('If there is any chance the your phone is being monitored by spyware, do not continue! Find a safe phone to contact us. To learn more about spyware, please visit the webpage http://bit.ly/1K2tAes.')
-        twiml.sms('We are here to support you. Please know that in the State of California, you have privacy priviledges that are afforded between you and your counselor. However, in we may have to disclose this information in a criminal proceeding regarding a crime allegedly perpetrated against the yourself or another household member, or in a proceeding related to child abuse. We are here to support you and are happy to answer any questions you may have.')
+        twiml.sms('We are here to support you. Please know that in the State of California, you have privacy priviledges that are afforded between you and your counselor. However, in we may have to disclose this information in a criminal proceeding regarding a crime allegedly perpetrated against the yourself or another household member, or in a proceeding related to child abuse. \n\nWe are here to support you and are happy to answer any questions you may have. We will respond very shortly!')
         client.parse.createConversation(phoneHash, smsMessage, true, function(conversationResp) {
           res.writeHead(200, {'Content-Type': 'text/xml'});
           res.end(twiml.toString());
