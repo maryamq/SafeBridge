@@ -328,14 +328,14 @@ app.post('/api/v1/receiveMessage', function(req, res){
     } else {
       client.parse.getSingleConversation(phoneHash, function(conversationResp) {
         if(typeof conversationResp === 'undefined') {
-          client.parse.createConversation(phoneHash, smsMessage, function(conversationResp) {
+          client.parse.createConversation(phoneHash, smsMessage, true, function(conversationResp) {
             res.writeHead(200, {'Content-Type': 'text/xml'});
             res.end(twiml.toString());
           })
         } else {
           var attributes = conversationResp.attributes || {}
           var advisorId = attributes.advisor_id ||  null
-          client.parse.saveConversation(advisorId, phoneHash, smsMessage, function(blank) {
+          client.parse.saveConversation(advisorId, phoneHash, smsMessage, true, function(blank) {
             res.writeHead(200, {'Content-Type': 'text/xml'});
             res.end(twiml.toString());
           })
