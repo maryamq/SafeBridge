@@ -228,7 +228,6 @@ app.get('/api/v1/claimConversation/:session_id/:advisor_id', function(req, res){
    res.send("Success " + session_id);
 });
 
-
 app.post('/api/v1/sendMessage', function(req, res){
   var a_id = req.param.advisor_id;  // advisor id
   var session_id = req.param.session_id;
@@ -253,9 +252,8 @@ app.get('/api/v1/getConversation', function(req, res){
   });
 });
 
-app.get('/api/v1/endConversation', function(req, res){
-  var s_id = req.param.session_id;
-  console.log("session " + s_id);
+app.get('/api/v1/endConversation/:session_id', function(req, res){
+  var s_id = req.params.session_id;
   client.parse.endConversation(s_id);
   res.send("End Conversation Done: " + s_id);
 });
